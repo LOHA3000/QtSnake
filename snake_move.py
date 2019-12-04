@@ -46,7 +46,11 @@ def generate_field():
 
 def generate_pineapple():
     global coordinates
-    coordinates['pineapple'] = [r(0, n - 1), r(0, n - 1)]
+    del coordinates['pineapple']
+    x, y = [r(0, n - 1), r(0, n - 1)]
+    while [y, x] in coordinates.values():
+        [x, y] = [r(0, n - 1), r(0, n - 1)]
+    coordinates['pineapple'] = [y, x]
 
 
 def get_pineapple():
@@ -91,7 +95,6 @@ def start():
     coordinates['tail'] = [m[0] + (snake_size + 1) * y_tail, m[1] + (snake_size + 1) * x_tail]
     for i in range(1, snake_size + 1):
         coordinates[i] = [m[0] + i * y_tail, m[1] + i * x_tail]
-    print(coordinates)
     generate_pineapple()
 
 
@@ -102,8 +105,6 @@ def move():
     global n
     global t
     global ps
-    global turns
-    global pt
     t = coordinates['tail']
     ps = coordinates[snake_size]
     x_head = 0
@@ -144,22 +145,15 @@ def check_turns():
     global pt
     turns = {}
     for i in coordinates:
-        # print(i, coordinates[i])
         if type(i) == int and snake_size > i > 1:
-            # print(coordinates[i - 1][0] != coordinates[i + 1][0])
-            # print(coordinates[i - 1][1] != coordinates[i + 1][1])
             if (coordinates[i - 1][0] != coordinates[i + 1][0]
                     and coordinates[i - 1][1] != coordinates[i + 1][1]):
                 turns[i] = coordinates[i]
         elif i == 1:
-            # print(coordinates['head'][0] != coordinates[i + 1][0])
-            # print(coordinates['head'][1] != coordinates[i + 1][1])
             if (coordinates['head'][0] != coordinates[i + 1][0]
                     and coordinates['head'][1] != coordinates[i + 1][1]):
                 turns[i] = coordinates[i]
         elif i == snake_size:
-            # print(coordinates[i - 1][0] != coordinates['tail'][0])
-            # print(coordinates[i - 1][1] != coordinates['tail'][1])
             if (coordinates[i - 1][0] != coordinates['tail'][0]
                     and coordinates[i - 1][1] != coordinates['tail'][1]):
                 turns[i] = coordinates[i]
@@ -167,30 +161,13 @@ def check_turns():
             if coordinates['tail'] == turns[snake_size]:
                 pt = turns[snake_size]
                 print(pt)
-                # del turns[snake_size]
-    print(turns)
-    '''
-    for i in coordinates:
-        if i in turns:
-            if i == 1:
-                directions[i] = [directions['head'][1], directions[i + 1][0]]
-            elif i == snake_size:
-                directions[i] = [directions[i - 1][1], directions['tail']]
-            else:
-                directions[i] = [directions[i - 1][1], directions[i + 1][0]]
-        print(i)
-        print(directions)
-        if i == 'head' or i == 'tail' or i == 'pineapple':
-            pass
-        elif i == 1:
-            directions[i] = [directions['head'][1], directions[i + 1][0]]
-        elif i == snake_size:
-            directions[i] = [directions[i - 1][1], directions['tail']]
-        else:
-            directions[i] = [directions[i - 1][1], directions[i + 1][0]]
-    print(directions)
-    '''
     generate_field()
+    
+
+def check_directions():
+    global coordinates
+    for i in range(1, snake_size + 1):
+        pass
 
 
 def game():
@@ -209,22 +186,34 @@ def game():
         elif command == 's':
             break
         if command in ['u', 'r', 'd', 'l']:
-            if directions['head'][0] == 1 or directions['head'][0] == 3:
-                if command == 'u':
-                    directions['head'] = [0, 0]
-                    move()
-                elif command == 'd':
-                    directions['head'] = [2, 2]
-                    move()
-            else:
-                print('Error')
-            if directions['head'][0] == 0 or directions['head'][0] == 2:
-                if command == 'r':
-                    directions['head'] = [1, 1]
-                    move()
-                elif command == 'l':
-                    directions['head'] = [3, 3]
-                    move()
+            x_head = 0
+            y_head = 0
+            lr = False  # возможность поворота влево и вправо 
+            ud = False  # возможность поворота вверх и вниз
+            if directions['head'][0] == 0:
+                y_head = -1
+                lr = True
+            elif directions['head'][0] == 1:
+                x_head = 1
+                ud = True
+            elif directions['head'][0] == 2:
+                y_head = 1
+                lr = True
+            elif directions['head'][0] == 3:
+                x_head = -1
+                ud = True
+            if command == 'u' and ud:
+                directions['head'] = [0, 0]
+                move()
+            elif command == 'd'and ud:
+                directions['head'] = [2, 2]
+                move()
+            elif command == 'r' and lr:
+                directions['head'] = [1, 1]
+                move()
+            elif command == 'l' and lr:
+                directions['head'] = [3, 3]
+                move()
             else:
                 print('Error')
         if coordinates['head'] == coordinates['pineapple']:
