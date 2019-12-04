@@ -8,14 +8,13 @@ turn = '@'
 pineapple = '$'
 
 field = []
-n = 10
+n = 10  # начальная длина змейки
 snake_size = 2
 
 coordinates = {'head': [0, 0], 'tail': [0, 0], 'pineapple': [0, 0]}
 turns = {}
 directions = {'head': 0}
 
-head_direction = 0
 t = []  # последнее положение хвоста
 ps = []  # последне положение сегмента перед хвостом
 pt = []  # коордтната последнего поворота
@@ -64,7 +63,7 @@ def get_pineapple():
     coordinates[snake_size] = ps
     check_turns()
     print(pt)
-    if pt != []:
+    if pt != list():
         turns[snake_size] = pt
         pt = []
     generate_pineapple()
@@ -78,7 +77,7 @@ def start():
     coordinates['head'] = [r(snake_size + 2, n - snake_size - 2), r(snake_size + 2, n - snake_size - 2)]
     k = r(0, 3)
     directions['head'] = [k, k]
-    for i in range(snake_size):
+    for i in range(1, snake_size + 1):
         directions[i] = directions['head']
     directions['tail'] = directions['head']
     x_tail = 0
@@ -135,7 +134,8 @@ def move():
             coordinates[i][1] = 0
         elif coordinates[i][1] == -1:
             coordinates[i][1] = n - 1
-        check_turns()
+    check_turns()
+    check_directions()
 
 
 def check_turns():
@@ -162,12 +162,48 @@ def check_turns():
                 pt = turns[snake_size]
                 print(pt)
     generate_field()
-    
+
 
 def check_directions():
     global coordinates
-    for i in range(1, snake_size + 1):
-        pass
+    global directions
+    global snake_size
+    print(coordinates)
+    for i in range(1, snake_size + 2):
+        segment_direction = 0
+        if i == 1:
+            if coordinates[i + 1][0] > coordinates[i][0]:
+                segment_direction = 0
+            elif coordinates[i + 1][1] < coordinates[i][1]:
+                segment_direction = 1
+            elif coordinates[i + 1][0] < coordinates[i][0]:
+                segment_direction = 2
+            elif coordinates[i + 1][1] > coordinates[i][1]:
+                segment_direction = 3
+            directions[i] = [directions['head'][1], segment_direction]
+        elif type(i) == int and i < snake_size:
+            if coordinates[i + 1][0] > coordinates[i][0]:
+                segment_direction = 0
+            elif coordinates[i + 1][1] < coordinates[i][1]:
+                segment_direction = 1
+            elif coordinates[i + 1][0] < coordinates[i][0]:
+                segment_direction = 2
+            elif coordinates[i + 1][1] > coordinates[i][1]:
+                segment_direction = 3
+            directions[i] = [directions[i - 1][1], segment_direction]
+        elif i == snake_size:
+            if coordinates['tail'][0] > coordinates[i][0]:
+                segment_direction = 0
+            elif coordinates['tail'][1] < coordinates[i][1]:
+                segment_direction = 1
+            elif coordinates['tail'][0] < coordinates[i][0]:
+                segment_direction = 2
+            elif coordinates['tail'][1] > coordinates[i][1]:
+                segment_direction = 3
+            directions[i] = [directions[i - 1][1], segment_direction]
+        elif i == snake_size + 1:
+            directions['tail'] = [directions[snake_size][1], directions[snake_size][1]]
+    print(directions)
 
 
 def game():
@@ -186,26 +222,20 @@ def game():
         elif command == 's':
             break
         if command in ['u', 'r', 'd', 'l']:
-            x_head = 0
-            y_head = 0
-            lr = False  # возможность поворота влево и вправо 
+            lr = False  # возможность поворота влево и вправо
             ud = False  # возможность поворота вверх и вниз
             if directions['head'][0] == 0:
-                y_head = -1
                 lr = True
             elif directions['head'][0] == 1:
-                x_head = 1
                 ud = True
             elif directions['head'][0] == 2:
-                y_head = 1
                 lr = True
             elif directions['head'][0] == 3:
-                x_head = -1
                 ud = True
             if command == 'u' and ud:
                 directions['head'] = [0, 0]
                 move()
-            elif command == 'd'and ud:
+            elif command == 'd' and ud:
                 directions['head'] = [2, 2]
                 move()
             elif command == 'r' and lr:
