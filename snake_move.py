@@ -171,7 +171,7 @@ def check_directions():
     print(coordinates)
     for i in range(1, snake_size + 2):
         segment_direction = 0
-        if i == 1:
+        if type(i) == int:
             if coordinates[i + 1][0] > coordinates[i][0]:
                 segment_direction = 0
             elif coordinates[i + 1][1] < coordinates[i][1]:
@@ -180,17 +180,10 @@ def check_directions():
                 segment_direction = 2
             elif coordinates[i + 1][1] > coordinates[i][1]:
                 segment_direction = 3
-            directions[i] = [directions['head'][1], segment_direction]
-        elif type(i) == int and i < snake_size:
-            if coordinates[i + 1][0] > coordinates[i][0]:
-                segment_direction = 0
-            elif coordinates[i + 1][1] < coordinates[i][1]:
-                segment_direction = 1
-            elif coordinates[i + 1][0] < coordinates[i][0]:
-                segment_direction = 2
-            elif coordinates[i + 1][1] > coordinates[i][1]:
-                segment_direction = 3
-            directions[i] = [directions[i - 1][1], segment_direction]
+            if i == 1:
+                directions[i] = [directions['head'][1], segment_direction]
+            elif i < snake_size:
+                directions[i] = [directions[i - 1][1], segment_direction]
         elif i == snake_size:
             if coordinates['tail'][0] > coordinates[i][0]:
                 segment_direction = 0
