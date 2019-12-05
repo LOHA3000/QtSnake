@@ -1,14 +1,10 @@
 import sys
-
 from random import randint as r
 
-from PyQt5.QtWidgets import QWidget, QApplication, QLabel, QPushButton
-from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtGui import QPainter, QColor, QBrush, QPixmap
-
-import time
-
 from PIL import Image
+from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtGui import QPainter, QColor, QPixmap
+from PyQt5.QtWidgets import QWidget, QApplication, QLabel
 
 
 class Game(QWidget):
@@ -35,6 +31,13 @@ class Game(QWidget):
         self.tail.resize(self.pixels_side_size, self.pixels_side_size)
         self.pineapple = QLabel(self)
         self.pineapple.resize(self.pixels_side_size, self.pixels_side_size)
+
+        # скорость змейки
+        self.snake_speed = 500
+        # цикл игры
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.move)
+        self.timer.start(self.snake_speed)
 
         self.initUI()
 
@@ -72,12 +75,10 @@ class Game(QWidget):
         elif event.key() == Qt.Key_Left:
             self.directions['head'] = [3, 3]
             print('влево')
-        '''
         elif event.key() == Qt.Key_P:
             self.timer.stop()
         elif event.key() == Qt.Key_S:
             self.timer.start(self.snake_speed)
-        '''
 
     def generate_field(self):
         print(self.coordinates, self.directions)
@@ -175,6 +176,8 @@ class Game(QWidget):
         self.generate_pineapple()
 
     def move(self):
+        self.t = self.coordinates['tail']
+        self.ps = self.coordinates[self.snake_size]
         x_head = 0
         y_head = 0
         if self.directions['head'][0] == 0:
@@ -203,6 +206,8 @@ class Game(QWidget):
                 self.coordinates[i][1] = 0
             elif self.coordinates[i][1] == -1:
                 self.coordinates[i][1] = self.n - 1
+        if self.coordinates['head'] == self.coordinates['pineapple']:
+            self.get_pineapple()
         self.check_turns()
         self.check_directions()
 
@@ -238,6 +243,8 @@ class Game(QWidget):
                     segment_direction = 2
                 elif self.coordinates[i + 1][1] > self.coordinates[i][1]:
                     segment_direction = 3
+                if abs(segment_direction - self.directions[i + 1][1]) == 2:
+                    segment_direction = self.directions[i + 1][1]
                 if i == 1:
                     self.directions[i] = [self.directions['head'][1], segment_direction]
                 else:
@@ -251,7 +258,9 @@ class Game(QWidget):
                     segment_direction = 2
                 elif self.coordinates['tail'][1] > self.coordinates[i][1]:
                     segment_direction = 3
-                self.directions[i] = [self.directions[i - 1][1], segment_direction]
+                if abs(segment_direction - self.directions[i - 1][1]) == 2:
+                    segment_direction = self.directions['tail'][1]
+                self.directions[i] = [self.directions['tail'][1], segment_direction]
             elif i == self.snake_size + 1:
                 self.directions['tail'] = [self.directions[self.snake_size][1], self.directions[self.snake_size][1]]
 
