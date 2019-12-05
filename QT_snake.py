@@ -29,6 +29,13 @@ class Game(QWidget):
 
         self.play = False
 
+        self.head = QLabel(self)
+        self.head.resize(self.pixels_side_size, self.pixels_side_size)
+        self.tail = QLabel(self)
+        self.tail.resize(self.pixels_side_size, self.pixels_side_size)
+        self.pineapple = QLabel(self)
+        self.pineapple.resize(self.pixels_side_size, self.pixels_side_size)
+
         self.initUI()
 
     def initUI(self):
@@ -42,8 +49,88 @@ class Game(QWidget):
             self.start()
         self.generate_field()
 
+    def paintEvent(self, event):
+        qp = QPainter()
+        qp.begin(self)
+        self.draw_field(qp, self.n, self.pixels_side_size)
+        qp.end()
+
+    def draw_field(self, qp, n, p):
+        qp.setBrush(QColor(34, 177, 76))
+        qp.drawRect(-1, -1, p * n + 1, p * n + 1)
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Up:
+            self.directions['head'] = [0, 0]
+            print('вверх')
+        elif event.key() == Qt.Key_Right:
+            self.directions['head'] = [1, 1]
+            print('вправо')
+        elif event.key() == Qt.Key_Down:
+            self.directions['head'] = [2, 2]
+            print('вниз')
+        elif event.key() == Qt.Key_Left:
+            self.directions['head'] = [3, 3]
+            print('влево')
+        '''
+        elif event.key() == Qt.Key_P:
+            self.timer.stop()
+        elif event.key() == Qt.Key_S:
+            self.timer.start(self.snake_speed)
+        '''
+
     def generate_field(self):
-        pass
+        print(self.coordinates, self.directions)
+        for i in self.coordinates:
+            if i == 'pineapple':
+                self.generate_image('p', self.coordinates['pineapple'])
+            elif i == 'head':
+                self.generate_image('h', self.coordinates['head'])
+            elif i == 'tail':
+                self.generate_image('t', self.coordinates['tail'])
+
+    def generate_image(self, object, coords):
+        if object == 'p':
+            pixmap = QPixmap('snake_segments/pineapple.png')
+            self.pineapple.move(self.pixels_side_size * coords[1],
+                                self.pixels_side_size * coords[0])
+            self.pineapple.setPixmap(pixmap)
+        elif object == 'h':
+            im = Image.open('snake_segments/head.png')
+            if self.directions['head'][0] == 3:
+                im = im.rotate(90, expand=1)
+                im.save('snake_segments/res_head.png')
+            elif self.directions['head'][0] == 2:
+                im = im.rotate(180, expand=1)
+                im.save('snake_segments/res_head.png')
+            elif self.directions['head'][0] == 1:
+                im = im.rotate(270, expand=1)
+                im.save('snake_segments/res_head.png')
+            if self.directions['head'][0] != 0:
+                pixmap = QPixmap('snake_segments/res_head.png')
+            else:
+                pixmap = QPixmap('snake_segments/head.png')
+            self.head.setPixmap(pixmap)
+            self.head.move(self.pixels_side_size * coords[1],
+                           self.pixels_side_size * coords[0])
+        elif object == 't':
+            im = Image.open('snake_segments/tail.png')
+            if self.directions['tail'][0] == 3:
+                im = im.rotate(90, expand=1)
+                im.save('snake_segments/res_tail.png')
+            elif self.directions['tail'][0] == 2:
+                im = im.rotate(180, expand=1)
+                im.save('snake_segments/res_tail.png')
+            elif self.directions['tail'][0] == 1:
+                im = im.rotate(270, expand=1)
+                im.save('snake_segments/res_tail.png')
+            if self.directions['tail'][0] != 0:
+                pixmap = QPixmap('snake_segments/res_tail.png')
+            else:
+                pixmap = QPixmap('snake_segments/tail.png')
+            self.tail.setPixmap(pixmap)
+            self.tail.move(self.pixels_side_size * coords[1],
+                           self.pixels_side_size * coords[0])
 
     def generate_pineapple(self):
         del self.coordinates['pineapple']
