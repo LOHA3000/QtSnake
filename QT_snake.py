@@ -25,6 +25,10 @@ class Game(QWidget):
 
         self.play = False
 
+        self.body_labels = []
+        for i in range(self.snake_size):
+            self.generate_bodies()
+
         self.head = QLabel(self)
         self.head.resize(self.pixels_side_size, self.pixels_side_size)
         self.tail = QLabel(self)
@@ -64,24 +68,36 @@ class Game(QWidget):
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Up:
-            self.directions['head'] = [0, 0]
-            print('вверх')
+            if self.directions['head'] == [1, 1] or self.directions['head'] == [3, 3]:
+                self.directions['head'] = [0, 0]
+                print('вверх')
+            else:
+                print('Error')
         elif event.key() == Qt.Key_Right:
-            self.directions['head'] = [1, 1]
-            print('вправо')
+            if self.directions['head'] == [0, 0] or self.directions['head'] == [2, 2]:
+                self.directions['head'] = [1, 1]
+                print('вправо')
+            else:
+                print('Error')
         elif event.key() == Qt.Key_Down:
-            self.directions['head'] = [2, 2]
-            print('вниз')
+            if self.directions['head'] == [1, 1] or self.directions['head'] == [3, 3]:
+                self.directions['head'] = [2, 2]
+                print('вниз')
+            else:
+                print('Error')
         elif event.key() == Qt.Key_Left:
-            self.directions['head'] = [3, 3]
-            print('влево')
+            if self.directions['head'] == [0, 0] or self.directions['head'] == [2, 2]:
+                self.directions['head'] = [3, 3]
+                print('влево')
+            else:
+                print('Error')
         elif event.key() == Qt.Key_P:
             self.timer.stop()
         elif event.key() == Qt.Key_S:
             self.timer.start(self.snake_speed)
 
     def generate_field(self):
-        print(self.coordinates, self.directions)
+        # print(self.coordinates, self.directions)
         for i in self.coordinates:
             if i == 'pineapple':
                 self.generate_image('p', self.coordinates['pineapple'])
@@ -89,8 +105,10 @@ class Game(QWidget):
                 self.generate_image('h', self.coordinates['head'])
             elif i == 'tail':
                 self.generate_image('t', self.coordinates['tail'])
+            elif type(i) == int:
+                self.generate_image('b', self.coordinates[i], i)
 
-    def generate_image(self, object, coords):
+    def generate_image(self, object, coords, i=0):
         if object == 'p':
             pixmap = QPixmap('snake_segments/pineapple.png')
             self.pineapple.move(self.pixels_side_size * coords[1],
@@ -132,6 +150,14 @@ class Game(QWidget):
             self.tail.setPixmap(pixmap)
             self.tail.move(self.pixels_side_size * coords[1],
                            self.pixels_side_size * coords[0])
+        elif object == 'b':
+            self.body_labels[i]
+    
+    def generate_bodies(self):
+        p = QLabel(self)
+        p.resize(20, 20)
+        self.body_labels.append(p)
+        print(self.body_labels)
 
     def generate_pineapple(self):
         del self.coordinates['pineapple']
@@ -148,6 +174,7 @@ class Game(QWidget):
         if self.pt != list():
             self.turns[self.snake_size] = self.pt
             self.pt = []
+        self.generate_bodies()
         self.generate_pineapple()
         self.generate_field()
 
@@ -243,8 +270,6 @@ class Game(QWidget):
                     segment_direction = 2
                 elif self.coordinates[i + 1][1] > self.coordinates[i][1]:
                     segment_direction = 3
-                if abs(segment_direction - self.directions[i + 1][1]) == 2:
-                    segment_direction = self.directions[i + 1][1]
                 if i == 1:
                     self.directions[i] = [self.directions['head'][1], segment_direction]
                 else:
