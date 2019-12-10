@@ -89,7 +89,11 @@ class Game(QWidget):
             self.timer.start(self.snake_speed)
 
     def generate_field(self):
-        # print(self.coordinates, self.directions)
+        print(self.coordinates)
+        print(self.directions)
+        print(self.turns)
+        self.check_directions()
+        self.check_turns()
         for i in self.coordinates:
             if i == 'pineapple':
                 self.generate_image('p', self.coordinates['pineapple'])
@@ -98,8 +102,8 @@ class Game(QWidget):
             elif i == 'tail':
                 self.generate_image('t', self.coordinates['tail'])
             elif type(i) == int:
-                if i not in self.turns:
-                    self.generate_image('b', self.coordinates[i], i - 1)
+                self.generate_image('b', self.coordinates[i], i - 1)
+            print(i, 'generated')
 
     def generate_image(self, object, coords, i=0):
         if object == 'p':
@@ -111,15 +115,15 @@ class Game(QWidget):
             im = Image.open('snake_segments/head.png')
             if self.directions['head'][0] == 3:
                 im = im.rotate(90, expand=1)
-                im.save('snake_segments/res_head.png')
+                im.save('snake_segments/res/res_head.png')
             elif self.directions['head'][0] == 2:
                 im = im.rotate(180, expand=1)
-                im.save('snake_segments/res_head.png')
+                im.save('snake_segments/res/res_head.png')
             elif self.directions['head'][0] == 1:
                 im = im.rotate(270, expand=1)
-                im.save('snake_segments/res_head.png')
+                im.save('snake_segments/res/res_head.png')
             if self.directions['head'][0] != 0:
-                pixmap = QPixmap('snake_segments/res_head.png')
+                pixmap = QPixmap('snake_segments/res/res_head.png')
             else:
                 pixmap = QPixmap('snake_segments/head.png')
             self.head.setPixmap(pixmap)
@@ -129,31 +133,38 @@ class Game(QWidget):
             im = Image.open('snake_segments/tail.png')
             if self.directions['tail'][0] == 3:
                 im = im.rotate(90, expand=1)
-                im.save('snake_segments/res_tail.png')
+                im.save('snake_segments/res/res_tail.png')
             elif self.directions['tail'][0] == 2:
                 im = im.rotate(180, expand=1)
-                im.save('snake_segments/res_tail.png')
+                im.save('snake_segments/res/res_tail.png')
             elif self.directions['tail'][0] == 1:
                 im = im.rotate(270, expand=1)
-                im.save('snake_segments/res_tail.png')
+                im.save('snake_segments/res/res_tail.png')
             if self.directions['tail'][0] != 0:
-                pixmap = QPixmap('snake_segments/res_tail.png')
+                pixmap = QPixmap('snake_segments/res/res_tail.png')
             else:
                 pixmap = QPixmap('snake_segments/tail.png')
             self.tail.setPixmap(pixmap)
             self.tail.move(self.pixels_side_size * coords[1],
                            self.pixels_side_size * coords[0])
         elif object == 'b':
-            '''print('body')
-            im = Image.open('snake_segments/body.png')
-            print(self.directions[i + 1])
-            if self.directions[i + 1][0] == 3 or self.directions[i + 1][0] == 3:
+            try:
+                im = Image.open('snake_segments/res/res_body.png')
+                im .save('snake_segments/res/res_body.png')
+            except:
+                im = Image.open('snake_segments/body.png')
                 im = im.rotate(90, expand=1)
-                im.save('snake_segments/res_body.png')
-            elif self.directions[i + 1] == 0 or self.directions[i + 1] == 2:
+                im.save('snake_segments/res/res_body.png')
+            if self.directions[i + 1] == [0, 0] or self.directions[i + 1] == [2, 2]:
                 pixmap = QPixmap('snake_segments/body.png')
-            else:'''
-            pixmap = QPixmap('snake_segments/body.png')
+            elif self.directions[i + 1][0] != self.directions[i + 1][1]:
+                im = Image.open('snake_segments/turn.png')
+                if self.directions[i + 1] == [1, 2] or self.directions[i + 1] == [2, 1]:
+                    im = im.rotate(180, expand=1)
+                im.save('snake_segments/res/res_turn.png')
+                pixmap = QPixmap('snake_segments/turn.png')
+            else:
+                pixmap = QPixmap('snake_segments/res/res_body.png')
             self.body_labels[i].move(self.pixels_side_size * coords[1],
                                      self.pixels_side_size * coords[0])
             self.body_labels[i].setPixmap(pixmap)
@@ -270,15 +281,23 @@ class Game(QWidget):
             if type(i) == int and i < self.snake_size:
                 if self.coordinates[i + 1][0] > self.coordinates[i][0]:
                     segment_direction = 0
+                    print(i, "Up")
                 elif self.coordinates[i + 1][1] < self.coordinates[i][1]:
                     segment_direction = 1
+                    print(i, "Right")
                 elif self.coordinates[i + 1][0] < self.coordinates[i][0]:
                     segment_direction = 2
+                    print(i, "Down")
                 elif self.coordinates[i + 1][1] > self.coordinates[i][1]:
                     segment_direction = 3
+                    print(i, "Left")
                 if i == 1:
+                    if abs(segment_direction - self.directions['head'][1]) == 2:
+                        segment_direction = self.directions[i + 1][1]
                     self.directions[i] = [self.directions['head'][1], segment_direction]
                 else:
+                    if abs(segment_direction - self.directions[i - 1][1]) == 2:
+                        segment_direction = self.directions[i + 1][1]
                     self.directions[i] = [self.directions[i - 1][1], segment_direction]
             elif i == self.snake_size:
                 if self.coordinates['tail'][0] > self.coordinates[i][0]:
@@ -291,7 +310,7 @@ class Game(QWidget):
                     segment_direction = 3
                 if abs(segment_direction - self.directions[i - 1][1]) == 2:
                     segment_direction = self.directions['tail'][1]
-                self.directions[i] = [self.directions['tail'][1], segment_direction]
+                self.directions[i] = [self.directions[i - 1][1], segment_direction]
             elif i == self.snake_size + 1:
                 self.directions['tail'] = [self.directions[self.snake_size][1], self.directions[self.snake_size][1]]
 
