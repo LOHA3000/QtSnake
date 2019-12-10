@@ -70,40 +70,32 @@ class Game(QWidget):
         if event.key() == Qt.Key_Up:
             if self.directions['head'] == [1, 1] or self.directions['head'] == [3, 3]:
                 self.directions['head'] = [0, 0]
-                # print('вверх')
         elif event.key() == Qt.Key_Right:
             if self.directions['head'] == [0, 0] or self.directions['head'] == [2, 2]:
                 self.directions['head'] = [1, 1]
-                # print('вправо')
         elif event.key() == Qt.Key_Down:
             if self.directions['head'] == [1, 1] or self.directions['head'] == [3, 3]:
                 self.directions['head'] = [2, 2]
-                # print('вниз')
         elif event.key() == Qt.Key_Left:
             if self.directions['head'] == [0, 0] or self.directions['head'] == [2, 2]:
                 self.directions['head'] = [3, 3]
-                # print('влево')
         elif event.key() == Qt.Key_P:
             self.timer.stop()
         elif event.key() == Qt.Key_S:
             self.timer.start(self.snake_speed)
 
     def generate_field(self):
-        print(self.coordinates)
-        print(self.directions)
-        print(self.turns)
         self.check_directions()
         self.check_turns()
         for i in self.coordinates:
             if i == 'pineapple':
-                self.generate_image('p', self.coordinates['pineapple'])
+                self.generate_image('p', self.coordinates[i])
             elif i == 'head':
-                self.generate_image('h', self.coordinates['head'])
+                self.generate_image('h', self.coordinates[i])
             elif i == 'tail':
-                self.generate_image('t', self.coordinates['tail'])
+                self.generate_image('t', self.coordinates[i])
             elif type(i) == int:
                 self.generate_image('b', self.coordinates[i], i - 1)
-            print(i, 'generated')
 
     def generate_image(self, object, coords, i=0):
         if object == 'p':
@@ -158,11 +150,19 @@ class Game(QWidget):
             if self.directions[i + 1] == [0, 0] or self.directions[i + 1] == [2, 2]:
                 pixmap = QPixmap('snake_segments/body.png')
             elif self.directions[i + 1][0] != self.directions[i + 1][1]:
-                im = Image.open('snake_segments/turn.png')
-                if self.directions[i + 1] == [1, 2] or self.directions[i + 1] == [2, 1]:
-                    im = im.rotate(180, expand=1)
-                im.save('snake_segments/res/res_turn.png')
-                pixmap = QPixmap('snake_segments/turn.png')
+                print(self.directions[i + 1])
+                if self.directions[i + 1] == [0, 3] or self.directions[i + 1] == [1, 2]:
+                    pixmap = QPixmap('snake_segments/turn.png')
+                else:
+                    im = Image.open('snake_segments/turn.png')
+                    if self.directions[i + 1] == [3, 2] or self.directions[i + 1] == [0, 1]:
+                        im = im.rotate(90, expand=1)
+                    elif self.directions[i + 1] == [3, 0] or self.directions[i + 1] == [2, 1]:
+                        im = im.rotate(180, expand=1)
+                    elif self.directions[i + 1] == [1, 0] or self.directions[i + 1] == [2, 3]:
+                        im = im.rotate(270, expand=1)
+                    im.save('snake_segments/res/res_turn.png')
+                    pixmap = QPixmap('snake_segments/res/res_turn.png')
             else:
                 pixmap = QPixmap('snake_segments/res/res_body.png')
             self.body_labels[i].move(self.pixels_side_size * coords[1],
@@ -174,7 +174,6 @@ class Game(QWidget):
         p = QLabel(self)
         p.resize(self.pixels_side_size, self.pixels_side_size)
         self.body_labels.append(p)
-        print(self.body_labels)
 
     def generate_pineapple(self):
         del self.coordinates['pineapple']
@@ -281,16 +280,12 @@ class Game(QWidget):
             if type(i) == int and i < self.snake_size:
                 if self.coordinates[i + 1][0] > self.coordinates[i][0]:
                     segment_direction = 0
-                    print(i, "Up")
                 elif self.coordinates[i + 1][1] < self.coordinates[i][1]:
                     segment_direction = 1
-                    print(i, "Right")
                 elif self.coordinates[i + 1][0] < self.coordinates[i][0]:
                     segment_direction = 2
-                    print(i, "Down")
                 elif self.coordinates[i + 1][1] > self.coordinates[i][1]:
                     segment_direction = 3
-                    print(i, "Left")
                 if i == 1:
                     if abs(segment_direction - self.directions['head'][1]) == 2:
                         segment_direction = self.directions[i + 1][1]
