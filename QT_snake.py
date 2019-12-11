@@ -11,7 +11,7 @@ class Game(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.n = 10  # размер поля в клеточках
+        self.n = 30  # размер поля в клеточках
         self.pixels_side_size = 20  # размер клетки в пикселях
         self.snake_size = 2  # начальная длина змейки
 
@@ -37,7 +37,7 @@ class Game(QWidget):
         self.pineapple.resize(self.pixels_side_size, self.pixels_side_size)
 
         # скорость змейки
-        self.snake_speed = 500
+        self.snake_speed = 170
         # цикл игры
         self.timer = QTimer()
         self.timer.timeout.connect(self.move)
@@ -83,6 +83,9 @@ class Game(QWidget):
             self.timer.stop()
         elif event.key() == Qt.Key_S:
             self.timer.start(self.snake_speed)
+        elif event.key() == Qt.Key_R:
+            print('restart')
+            self.restart()
 
     def generate_field(self):
         self.check_directions()
@@ -150,7 +153,6 @@ class Game(QWidget):
             if self.directions[i + 1] == [0, 0] or self.directions[i + 1] == [2, 2]:
                 pixmap = QPixmap('snake_segments/body.png')
             elif self.directions[i + 1][0] != self.directions[i + 1][1]:
-                print(self.directions[i + 1])
                 if self.directions[i + 1] == [0, 3] or self.directions[i + 1] == [1, 2]:
                     pixmap = QPixmap('snake_segments/turn.png')
                 else:
@@ -192,7 +194,17 @@ class Game(QWidget):
             self.pt = []
         self.generate_bodies()
         self.generate_pineapple()
-        self.generate_field()
+        try:
+            self.generate_field()
+            print('field ready')
+        except:
+            print('Error')
+            print(self.snake_size)
+            print(self.coordinates)
+            print(self.directions)
+            print(self.turns)
+            print(self.body_labels)
+        self.setWindowTitle(str(self.snake_size))
 
     def start(self):
         self.coordinates['head'] = [r(self.snake_size + 2, self.n - self.snake_size - 2),
@@ -217,6 +229,31 @@ class Game(QWidget):
         for i in range(1, self.snake_size + 1):
             self.coordinates[i] = [m[0] + i * y_tail, m[1] + i * x_tail]
         self.generate_pineapple()
+
+    def restart(self):
+        self.snake_size = 2
+
+        self.coordinates = {'head': [0, 0], 'tail': [0, 0], 'pineapple': [0, 0]}
+        self.turns = {}
+        self.directions = {'head': 0}
+
+        self.t = []
+        self.ps = []
+        self.pt = []
+
+        self.play = False
+        for i in self.body_labels:
+            i.hide()
+        self.body_labels = []
+        for i in range(self.snake_size):
+            self.generate_bodies()
+
+        self.timer.start(self.snake_speed)
+
+        if not self.play:
+            self.play = True
+            self.start()
+        self.generate_field()
 
     def move(self):
         self.t = self.coordinates['tail']
