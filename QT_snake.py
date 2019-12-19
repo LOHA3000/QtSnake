@@ -5,7 +5,7 @@ from tkinter import Tk, messagebox, Spinbox, Button
 from PIL import Image
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QPainter, QColor, QPixmap
-from PyQt5.QtWidgets import QWidget, QApplication, QLabel
+from PyQt5.QtWidgets import QWidget, QApplication, QLabel, QPushButton
 
 
 class Game(QWidget):
@@ -27,6 +27,8 @@ class Game(QWidget):
         self.pt = []  # коордтната последнего поворота
 
         self.play = False
+
+        self.is_playing = True
 
         self.body_labels = []
         for i in range(self.snake_size):
@@ -51,7 +53,7 @@ class Game(QWidget):
     def initUI(self):
         k = self.pixels_side_size * self.n  # размер поля в пикселях
 
-        self.setFixedSize(k, k)
+        self.setFixedSize(k, k + 20)
         self.setWindowTitle('Змейка')
 
         if not self.play:
@@ -116,18 +118,27 @@ class Game(QWidget):
             self.p.destroy()
             self.restart()
 
+    def check_game(self):
+        if len(set([str(i[0]) + ',' + str(i[1]) for i in list(self.coordinates.values())])) < self.snake_size + 3:
+            self.timer.stop()
+            self.is_playing = False
+        else:
+            self.is_playing = True
+
     def generate_field(self):
-        self.check_directions()
-        self.check_turns()
-        for i in self.coordinates:
-            if i == 'pineapple':
-                self.generate_image('p', self.coordinates[i])
-            elif i == 'head':
-                self.generate_image('h', self.coordinates[i])
-            elif i == 'tail':
-                self.generate_image('t', self.coordinates[i])
-            elif type(i) == int:
-                self.generate_image('b', self.coordinates[i], i - 1)
+        self.check_game()
+        if self.is_playing:
+            self.check_directions()
+            self.check_turns()
+            for i in self.coordinates:
+                if i == 'pineapple':
+                    self.generate_image('p', self.coordinates[i])
+                elif i == 'head':
+                    self.generate_image('h', self.coordinates[i])
+                elif i == 'tail':
+                    self.generate_image('t', self.coordinates[i])
+                elif type(i) == int:
+                    self.generate_image('b', self.coordinates[i], i - 1)
 
     def generate_image(self, object, coords, i=0):
         if object == 'p':
