@@ -1,5 +1,6 @@
 import sys
 from random import randint as r
+from tkinter import Tk, messagebox, Spinbox, Button
 
 from PIL import Image
 from PyQt5.QtCore import Qt, QTimer
@@ -11,7 +12,9 @@ class Game(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.n = 30  # размер поля в клеточках
+        self.field_size = 8
+
+        self.n = 8  # размер поля в клеточках
         self.pixels_side_size = 20  # размер клетки в пикселях
         self.snake_size = 2  # начальная длина змейки
 
@@ -81,10 +84,36 @@ class Game(QWidget):
                 self.directions['head'] = [3, 3]
         elif event.key() == Qt.Key_P:
             self.timer.stop()
-        elif event.key() == Qt.Key_S:
-            self.timer.start(self.snake_speed)
+        elif event.key() == Qt.Key_C:
+            if self.play:
+                self.timer.start(self.snake_speed)
+            else:
+                p = Tk()
+                messagebox.showerror('Вы проиграли', 'начните новую игру, нажав R')
+                p.destroy()
         elif event.key() == Qt.Key_R:
-            print('restart')
+            # print('restart')
+            self.restart()
+        elif event.key() == Qt.Key_S:
+            # print('settings')
+            self.timer.stop()
+            self.p = Tk()
+            self.p.title('Размер поля')
+            self.p.geometry('300x100+100+100')
+            self.p.resizable(False, False)
+            self.txt = Spinbox(self.p, from_=8, to=40, textvariable=self.field_size)
+            self.txt.place(x=0, y=0, relwidth=1, relheight=1 / 2)
+            button_save = Button(self.p, text='Save', command=self.save_settings,
+                                 font=('Cooper Black', 20))
+            button_save.place(x=0, y=51, relwidth=1, relheight=1 / 2)
+            self.p.mainloop()
+
+    def save_settings(self):
+            self.field_size = int(self.txt.get())
+            k = self.pixels_side_size * self.field_size  # размер поля в пикселях
+
+            self.setFixedSize(k, k)
+            self.p.destroy()
             self.restart()
 
     def generate_field(self):
@@ -189,24 +218,27 @@ class Game(QWidget):
         self.coordinates['tail'] = self.t
         self.coordinates[self.snake_size] = self.ps
         self.check_turns()
-        if self.pt != list():
+        if self.pt != []:
             self.turns[self.snake_size] = self.pt
             self.pt = []
         self.generate_bodies()
         self.generate_pineapple()
         try:
             self.generate_field()
-            print('field ready')
+            # print('field ready')
         except:
-            print('Error')
-            print(self.snake_size)
-            print(self.coordinates)
-            print(self.directions)
-            print(self.turns)
-            print(self.body_labels)
+            # print('Error')
+            # print(self.snake_size)
+            # print(self.coordinates)
+            # print(self.directions)
+            # print(self.turns)
+            # print(self.body_labels)
+            self.restart()
         self.setWindowTitle(str(self.snake_size))
 
     def start(self):
+        # print(type(self.n))
+        # print([i for i in range(self.snake_size + 2, self.n - self.snake_size - 2 + 1)])
         self.coordinates['head'] = [r(self.snake_size + 2, self.n - self.snake_size - 2),
                                     r(self.snake_size + 2, self.n - self.snake_size - 2)]
         k = r(0, 3)
@@ -231,7 +263,11 @@ class Game(QWidget):
         self.generate_pineapple()
 
     def restart(self):
+        self.n = self.field_size
+
         self.snake_size = 2
+
+        self.setWindowTitle(self.snake_size)
 
         self.coordinates = {'head': [0, 0], 'tail': [0, 0], 'pineapple': [0, 0]}
         self.turns = {}
@@ -290,7 +326,17 @@ class Game(QWidget):
             self.get_pineapple()
         self.check_turns()
         self.check_directions()
-        self.generate_field()
+        k = []
+        for i in self.coordinates.values():
+            if i not in k:
+                k.append(i)
+        # print(k, self.coordinates.keys(), self.snake_size)
+        if len(k) == self.snake_size + 3:
+            self.generate_field()
+        else:
+            self.timer.stop()
+            print('snake died')
+            self.play = False
 
     def check_turns(self):
         self.turns = {}
