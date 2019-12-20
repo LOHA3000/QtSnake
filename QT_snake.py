@@ -5,7 +5,7 @@ from tkinter import Tk, messagebox, Spinbox, Button
 from PIL import Image
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QPainter, QColor, QPixmap
-from PyQt5.QtWidgets import QWidget, QApplication, QLabel, QPushButton
+from PyQt5.QtWidgets import QWidget, QApplication, QLabel
 
 
 class Game(QWidget):
@@ -27,8 +27,6 @@ class Game(QWidget):
         self.pt = []  # коордтната последнего поворота
 
         self.play = False
-
-        self.is_playing = True
 
         self.body_labels = []
         for i in range(self.snake_size):
@@ -53,7 +51,7 @@ class Game(QWidget):
     def initUI(self):
         k = self.pixels_side_size * self.n  # размер поля в пикселях
 
-        self.setFixedSize(k, k + 20)
+        self.setFixedSize(k, k)
         self.setWindowTitle('Змейка')
 
         if not self.play:
@@ -90,7 +88,7 @@ class Game(QWidget):
             if self.play:
                 self.timer.start(self.snake_speed)
             else:
-                p = Tk()
+                p = Tk('Просто окно')
                 messagebox.showerror('Вы проиграли', 'начните новую игру, нажав R')
                 p.destroy()
         elif event.key() == Qt.Key_R:
@@ -111,34 +109,27 @@ class Game(QWidget):
             self.p.mainloop()
 
     def save_settings(self):
-            self.field_size = int(self.txt.get())
-            k = self.pixels_side_size * self.field_size  # размер поля в пикселях
+        self.field_size = int(self.txt.get())
+        if self.field_size < 8:
+            self.field_size = 8
+        k = self.pixels_side_size * self.field_size  # размер поля в пикселях
 
-            self.setFixedSize(k, k)
-            self.p.destroy()
-            self.restart()
-
-    def check_game(self):
-        if len(set([str(i[0]) + ',' + str(i[1]) for i in list(self.coordinates.values())])) < self.snake_size + 3:
-            self.timer.stop()
-            self.is_playing = False
-        else:
-            self.is_playing = True
+        self.setFixedSize(k, k)
+        self.p.destroy()
+        self.restart()
 
     def generate_field(self):
-        self.check_game()
-        if self.is_playing:
-            self.check_directions()
-            self.check_turns()
-            for i in self.coordinates:
-                if i == 'pineapple':
-                    self.generate_image('p', self.coordinates[i])
-                elif i == 'head':
-                    self.generate_image('h', self.coordinates[i])
-                elif i == 'tail':
-                    self.generate_image('t', self.coordinates[i])
-                elif type(i) == int:
-                    self.generate_image('b', self.coordinates[i], i - 1)
+        self.check_directions()
+        self.check_turns()
+        for i in self.coordinates:
+            if i == 'pineapple':
+                self.generate_image('p', self.coordinates[i])
+            elif i == 'head':
+                self.generate_image('h', self.coordinates[i])
+            elif i == 'tail':
+                self.generate_image('t', self.coordinates[i])
+            elif type(i) == int:
+                self.generate_image('b', self.coordinates[i], i - 1)
 
     def generate_image(self, object, coords, i=0):
         if object == 'p':
@@ -185,7 +176,7 @@ class Game(QWidget):
         elif object == 'b':
             try:
                 im = Image.open('snake_segments/res/res_body.png')
-                im .save('snake_segments/res/res_body.png')
+                im.save('snake_segments/res/res_body.png')
             except:
                 im = Image.open('snake_segments/body.png')
                 im = im.rotate(90, expand=1)
@@ -211,7 +202,7 @@ class Game(QWidget):
                                      self.pixels_side_size * coords[0])
             self.body_labels[i].setPixmap(pixmap)
             self.body_labels[i].show()
-    
+
     def generate_bodies(self):
         p = QLabel(self)
         p.resize(self.pixels_side_size, self.pixels_side_size)
@@ -278,7 +269,7 @@ class Game(QWidget):
 
         self.snake_size = 2
 
-        self.setWindowTitle(self.snake_size)
+        self.setWindowTitle(str(self.snake_size))
 
         self.coordinates = {'head': [0, 0], 'tail': [0, 0], 'pineapple': [0, 0]}
         self.turns = {}
@@ -346,8 +337,11 @@ class Game(QWidget):
             self.generate_field()
         else:
             self.timer.stop()
-            print('snake died')
+            # print('snake died')
             self.play = False
+            p = Tk('Просто окно')
+            messagebox.showerror('Вы проиграли', 'начните новую игру, нажав R')
+            p.destroy()
 
     def check_turns(self):
         self.turns = {}
